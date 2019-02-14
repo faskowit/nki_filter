@@ -1,0 +1,1 @@
+for x in $(ls -d A000*) ; do jjj=${x}/${x}_dti_qa.txt ; if [[ ! -e ${jjj} ]] ; then  echo "${x},,,,,," ; else printf "%s,%s,%s,%s,%s,%s" $(echo ${x}) $(grep tsnr_bX ${jjj} | awk {print }) $(grep outmean_bX ${jjj} | awk {print }) $(grep outmax_bX ${jjj} | awk {print }) $(grep meanABSrms ${jjj} | awk {print }) $(grep meanRELrms ${jjj} | awk {print }); echo ; fi; done 

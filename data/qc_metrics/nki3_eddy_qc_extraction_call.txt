@@ -1,0 +1,1 @@
+ for x in $(ls -d A000*) ; do jjj=${x}/quad/qc.json ; if [[ ! -e $jjj ]] ; then echo "${x},,,," ; else  printf "%s,%s,%s,%s," ${x} $(jq -r .qc_outliers_tot $jjj) $(jq -r .qc_mot_abs $jjj) $(jq -r .qc_mot_rel $jjj) ; echo ; fi;  done 
