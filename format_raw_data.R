@@ -14,8 +14,8 @@ qcmetListbPath <- paste(bPath,'qc_metrics/', sep='')
 ################################################################################
 # init list
 
-allSubs <- read.table(paste(initListbPath,'t1+dwi_sublist.txt',sep=''))
-colnames(allSubs) <- c("sub_name")
+allSubsDf <- read.table(paste(initListbPath,'t1+dwi_sublist.txt',sep=''))
+colnames(allSubsDf) <- c("sub_name")
 
 ################################################################################
 # survivor lists
@@ -31,11 +31,40 @@ for (idx in 1:length(survFiles)) {
     newColName <- tail(unlist(
         strsplit(sub('.txt','',tmpFileName),'_')),n=1)
     
-    tmpFileName
-    
-    
+    allSubsDf[[newColName]] <- allSubsDf$sub_name %in% tmpDat$sub_name 
     
 }
+
+################################################################################
+# now get the qc metrics in order
+
+tmpDf  <- as.data.frame(allSubsDf[,'sub_name'])
+tmpFiles <- dir(qcmetListbPath, pattern = "numout.*csv", full.names = TRUE)
+
+for (idx in 1:length(tmpFiles)) {
+    
+    tmpFileName <- tmpFiles[idx]
+    tmpDat <- read.table(tmpFileName, header = FALSE, sep = ',')
+
+    tmpStr <- tail(unlist(
+        strsplit(sub('.csv','',tmpFileName),'_')),n=1)
+    
+    newColName <- paste("numO_",tmpStr, sep = '')
+    colnames(tmpDat) <- c("sub_name",newColName,"ignore")
+
+    # get the inds
+    tmpInd <- allSubsDf$sub_name %in% tmpDat$sub_name 
+    
+    tmpDf[tmpInd,newColName] <- tmpDat[[newColName]]
+    
+}
+
+# add the tmpDf to the allSubsDf
+allSubsDf <- cbind(allSubsDf,tmpDf[,-1])
+
+################################################################################
+# 
+
 
 
 
