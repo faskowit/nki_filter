@@ -39,6 +39,8 @@ for (idx in 1:length(survFiles)) {
 # now get the qc metrics in order
 
 tmpDf  <- as.data.frame(allSubsDf[,'sub_name'])
+colnames(tmpDf) <- "sub_name"
+
 tmpFiles <- dir(qcmetListbPath, pattern = "numout.*csv", full.names = TRUE)
 
 for (idx in 1:length(tmpFiles)) {
@@ -51,18 +53,16 @@ for (idx in 1:length(tmpFiles)) {
     
     newColName <- paste("numO_",tmpStr, sep = '')
     colnames(tmpDat) <- c("sub_name",newColName,"ignore")
+    
+    # label 'no' outliers as 0 outliers
+    tmpDat[is.na(tmpDat[,newColName]),newColName] = 0
+    
+    tmpDf <- merge(tmpDf,tmpDat[c("sub_name",newColName)],by = "sub_name", all.x = TRUE )
 
-    # get the inds
-    # tmpInd <- which(allSubsDf$sub_name %in% tmpDat$sub_name)
-    tmpInd <- match(allSubsDf$sub_name, tmpDat$sub_name)
-    tmpInd <- tmpInd[!is.na(tmpInd)]
-    
-    tmpDf[tmpInd,newColName] <- tmpDat[[newColName]]
-    
 }
 
 # add the tmpDf to the allSubsDf
-allSubsDf <- cbind(allSubsDf,tmpDf[,-1])
+allSubsDf <- merge(allSubsDf,tmpDf,by = "sub_name", all.x = TRUE )
 
 ################################################################################
 # qa_dti
@@ -75,16 +75,7 @@ tmpDat <- read.table(tmpFileName, header = FALSE, sep = ',')
 cc <- c("tsnr_t1","outlmean_t1","outlmax_t1","meanABSrms_t1","meanRELrms_t1")
 colnames(tmpDat) <- c("sub_name",cc)
 
-# get the inds
-# this is reversed from before, because tmpData biger than allsubs
-#tmpInd <- which(tmpDat$sub_name  %in% allSubsDf$sub_name)
-tmpInd <- match(tmpDat$sub_name,allSubsDf$sub_name)
-tmpInd <- tmpInd[!is.na(tmpInd)]
-
-tmpDf[,cc] <- tmpDat[tmpInd,cc]
-  
-# all
-allSubsDf <- cbind(allSubsDf,tmpDf[,cc])
+allSubsDf <- merge(allSubsDf,tmpDat,by = "sub_name", all.x = TRUE )
 
 ################################################################################
 # time2
@@ -97,16 +88,7 @@ tmpDat <- read.table(tmpFileName, header = FALSE, sep = ',')
 cc2 <- c("tsnr_t2","outlmean_t2","outlmax_t2","meanABSrms_t2","meanRELrms_t2")
 colnames(tmpDat) <- c("sub_name",cc2)
 
-# get the inds
-# this is reversed from before, because tmpData biger than allsubs
-#tmpInd <- which(tmpDat$sub_name  %in% allSubsDf$sub_name)
-tmpInd <- match(tmpDat$sub_name,allSubsDf$sub_name)
-tmpInd <- tmpInd[!is.na(tmpInd)]
-
-tmpDf[,cc2] <- tmpDat[tmpInd,cc2]
-
-# all
-allSubsDf <- cbind(allSubsDf,tmpDf[,cc2])
+allSubsDf <- merge(allSubsDf,tmpDat,by = "sub_name", all.x = TRUE )
 
 ################################################################################
 # eddy qc
@@ -116,13 +98,7 @@ tmpDf  <- as.data.frame(allSubsDf[,'sub_name'])
 tmpFileName <- dir(qcmetListbPath, pattern = "nki3_eddy_qc.csv", full.names = TRUE)
 tmpDat <- read.table(tmpFileName, header = TRUE, sep = ',')
 
-#tmpInd <- which(tmpDat$sub_name  %in% allSubsDf$sub_name)
-tmpInd <- match(tmpDat$sub_name,allSubsDf$sub_name)
-tmpInd <- tmpInd[!is.na(tmpInd)]
-
-tmpDf <- cbind(tmpDf,tmpDat[tmpInd,-1])
-
-allSubsDf <- cbind(allSubsDf,tmpDf[,-1])
+allSubsDf <- merge(allSubsDf,tmpDat,by = "sub_name", all.x = TRUE )
 
 ################################################################################
 # parse the mriqc fmri file
@@ -150,9 +126,9 @@ tmpStr <- rapply(tmpDat, function(x){paste(sub('sub-','',x[1]),'-',x[2],sep = ''
 acq645Df['sub_name'] <- tmpStr
 
 fmri_mriqc_list <- list() 
-fmri_mriqc_list[[1]] <- acq1400Df #c("acq-1400", acq1400Df)
-fmri_mriqc_list[[2]] <- acq2500Df #c("acq-2500", acq2500Df)
-fmri_mriqc_list[[3]] <- acq645Df #c("acq-645", acq645Df)
+fmri_mriqc_list[[1]] <- acq1400Df 
+fmri_mriqc_list[[2]] <- acq2500Df 
+fmri_mriqc_list[[3]] <- acq645Df 
 
 ################################################################################
 # parse the mriqc t1 file
@@ -167,20 +143,43 @@ t1_mriqcDf['sub_name'] <- tmpStr
 ################################################################################
 # add some of the IQMs to the allSubsDf
 
+tmpDf  <- as.data.frame(allSubsDf[,'sub_name'])
+
 # T1 IQCMs: cjv, cnr, snr_total, snrd_total
 t1_iqm <- c("cjv", "cnr", "snr_total", "snrd_total")
 
-tmpInd <- which(t1_mriqcDf$sub_name  %in% allSubsDf$sub_name)
+tmpDf <- t1_mriqcDf[c("sub_name",t1_iqm)]
+colnames(tmpDf) <- c("sub_name",paste(t1_iqm,"_t1w",sep=""))
 
+allSubsDf <- merge(allSubsDf,tmpDf,by = "sub_name", all.x = TRUE )
 
+################################################################################
 
+tmpDf  <- as.data.frame(allSubsDf[,'sub_name'])
+colnames(tmpDf) <- "sub_name"
 
+# FMRI IQMs: dvars_nstd, tsnr, fd_mean, aqi
+fmri_qcm <- c("dvars_nstd", "tsnr", "fd_mean", "aqi")
 
+for (idx in 1:length(fmri_mriqc_list)) {
+    
+    tmpDat <- as.data.frame(fmri_mriqc_list[[idx]])
+    tmpStr <- attr(tmpDat,"acqname")
 
+    tmpDf2 <- tmpDat[c("sub_name",fmri_qcm)]
+    colnames(tmpDf2) <- c("sub_name",paste(fmri_qcm,"_",tmpStr,sep=""))
+    
+    tmpDf <- merge(tmpDf, tmpDf2, by = "sub_name", all.x = TRUE )
+    
+}
 
+allSubsDf <- merge(allSubsDf, tmpDf, by = "sub_name", all.x = TRUE )
 
+################################################################################
 
-
+tmpDat <- strsplit(as.character(allSubsDf$sub_name),'-ses-')
+allSubsDf["sub_id"] <- rapply(tmpDat, function(x)x[1])
+allSubsDf["sub_visit"] <- rapply(tmpDat, function(x)x[2])
 
 
 
