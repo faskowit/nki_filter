@@ -53,7 +53,9 @@ for (idx in 1:length(tmpFiles)) {
     colnames(tmpDat) <- c("sub_name",newColName,"ignore")
 
     # get the inds
-    tmpInd <- allSubsDf$sub_name %in% tmpDat$sub_name 
+    # tmpInd <- which(allSubsDf$sub_name %in% tmpDat$sub_name)
+    tmpInd <- match(allSubsDf$sub_name, tmpDat$sub_name)
+    tmpInd <- tmpInd[!is.na(tmpInd)]
     
     tmpDf[tmpInd,newColName] <- tmpDat[[newColName]]
     
@@ -75,7 +77,9 @@ colnames(tmpDat) <- c("sub_name",cc)
 
 # get the inds
 # this is reversed from before, because tmpData biger than allsubs
-tmpInd <- tmpDat$sub_name  %in% allSubsDf$sub_name
+#tmpInd <- which(tmpDat$sub_name  %in% allSubsDf$sub_name)
+tmpInd <- match(tmpDat$sub_name,allSubsDf$sub_name)
+tmpInd <- tmpInd[!is.na(tmpInd)]
 
 tmpDf[,cc] <- tmpDat[tmpInd,cc]
   
@@ -95,9 +99,11 @@ colnames(tmpDat) <- c("sub_name",cc2)
 
 # get the inds
 # this is reversed from before, because tmpData biger than allsubs
-tmpInd <- tmpDat$sub_name  %in% allSubsDf$sub_name
+#tmpInd <- which(tmpDat$sub_name  %in% allSubsDf$sub_name)
+tmpInd <- match(tmpDat$sub_name,allSubsDf$sub_name)
+tmpInd <- tmpInd[!is.na(tmpInd)]
 
-tmpDf[,cc2] <- tmpDat[tmpInd,cc]
+tmpDf[,cc2] <- tmpDat[tmpInd,cc2]
 
 # all
 allSubsDf <- cbind(allSubsDf,tmpDf[,cc2])
@@ -110,7 +116,10 @@ tmpDf  <- as.data.frame(allSubsDf[,'sub_name'])
 tmpFileName <- dir(qcmetListbPath, pattern = "nki3_eddy_qc.csv", full.names = TRUE)
 tmpDat <- read.table(tmpFileName, header = TRUE, sep = ',')
 
-tmpInd <- tmpDat$sub_name  %in% allSubsDf$sub_name
+#tmpInd <- which(tmpDat$sub_name  %in% allSubsDf$sub_name)
+tmpInd <- match(tmpDat$sub_name,allSubsDf$sub_name)
+tmpInd <- tmpInd[!is.na(tmpInd)]
+
 tmpDf <- cbind(tmpDf,tmpDat[tmpInd,-1])
 
 allSubsDf <- cbind(allSubsDf,tmpDf[,-1])
@@ -122,8 +131,11 @@ tmpFileName <- dir(qcmetListbPath, pattern = "mri_qc_group_bold.tsv", full.names
 fmri_mriqcDat <- read.table(tmpFileName, header = TRUE, sep = '\t')
 
 acq1400Df <- fmri_mriqcDat[grep(".*acq-1400_bold",fmri_mriqcDat$bids_name),]
+attr(acq1400Df,"acqname") <- "acq-1400"
 acq2500Df <- fmri_mriqcDat[grep(".*acq-2500_bold",fmri_mriqcDat$bids_name),]
+attr(acq2500Df,"acqname") <- "acq-2500"
 acq645Df <- fmri_mriqcDat[grep(".*acq-645_bold",fmri_mriqcDat$bids_name),]
+attr(acq645Df,"acqname") <- "acq-645"
 
 tmpDat <- strsplit(as.character(acq1400Df$bids_name),split = '_')
 tmpStr <- rapply(tmpDat, function(x){paste(sub('sub-','',x[1]),'-',x[2],sep = '')})
@@ -137,7 +149,35 @@ tmpDat <- strsplit(as.character(acq645Df$bids_name),split = '_')
 tmpStr <- rapply(tmpDat, function(x){paste(sub('sub-','',x[1]),'-',x[2],sep = '')})
 acq645Df['sub_name'] <- tmpStr
 
+fmri_mriqc_list <- list() 
+fmri_mriqc_list[[1]] <- acq1400Df #c("acq-1400", acq1400Df)
+fmri_mriqc_list[[2]] <- acq2500Df #c("acq-2500", acq2500Df)
+fmri_mriqc_list[[3]] <- acq645Df #c("acq-645", acq645Df)
+
 ################################################################################
+# parse the mriqc t1 file
+
+tmpFileName <- dir(qcmetListbPath, pattern = "mri_qc_group_T1w.tsv", full.names = TRUE)
+t1_mriqcDf <- read.table(tmpFileName, header = TRUE, sep = '\t')
+
+t1_mriqcDat <- strsplit(as.character(t1_mriqcDf$bids_name),split = '_')
+tmpStr <- rapply(t1_mriqcDat, function(x){paste(sub('sub-','',x[1]),'-',x[2],sep = '')})
+t1_mriqcDf['sub_name'] <- tmpStr
+
+################################################################################
+# add some of the IQMs to the allSubsDf
+
+# T1 IQCMs: cjv, cnr, snr_total, snrd_total
+t1_iqm <- c("cjv", "cnr", "snr_total", "snrd_total")
+
+tmpInd <- which(t1_mriqcDf$sub_name  %in% allSubsDf$sub_name)
+
+
+
+
+
+
+
 
 
 
