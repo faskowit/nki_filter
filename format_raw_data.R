@@ -159,7 +159,7 @@ tmpDf  <- as.data.frame(allSubsDf[,'sub_name'])
 colnames(tmpDf) <- "sub_name"
 
 # FMRI IQMs: dvars_nstd, tsnr, fd_mean, aqi
-fmri_qcm <- c("dvars_nstd", "tsnr", "fd_mean", "aqi")
+fmri_qcm <- c("dvars_nstd", "dvars_vstd", "tsnr", "fd_mean", "aqi")
 
 for (idx in 1:length(fmri_mriqc_list)) {
     
@@ -181,5 +181,11 @@ tmpDat <- strsplit(as.character(allSubsDf$sub_name),'-ses-')
 allSubsDf["sub_id"] <- rapply(tmpDat, function(x)x[1])
 allSubsDf["sub_visit"] <- rapply(tmpDat, function(x)x[2])
 
+################################################################################
+
+bPathOut <- paste(getwd(),'/proc_data/', sep='')
+dir.create(path = bPathOut)
+
+write.csv(allSubsDf, file = paste(bPathOut,'/allSubsDataProc.csv', sep=''))
 
 
