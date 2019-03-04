@@ -12,15 +12,16 @@ allSubsDf <- read.table(inFile, sep = ',', header = TRUE, row.names = 1)
 # FMRI      possible: dvars_nstd.{acq}, dvars_vstd.{acq}, tsnr.{acq}, 
 #                     fd_mean.{acq}, aqi.{acq}, numO.{acq} gcor.{acq} aor.{acq}
 #                     fd_perc.{acq} 
-#
+
+PRCNTO <- 15
 
 # FMRI numO thresholds
 # 900 - 4
-Othr645 <- floor(896 * 0.15)
+Othr645 <- floor(896 * (PRCNTO / 100))
 # 404 - 4
-Othr1400 <- floor(400 * 0.15)
+Othr1400 <- floor(400 * (PRCNTO / 100))
 # 120 - 4
-Othr2500 <- floor(116 * 0.15)
+Othr2500 <- floor(116 * (PRCNTO / 100))
 
 ################################################################################
 
@@ -90,7 +91,7 @@ write.table(filterDF.2500subs, file = paste(bPathOut,'/acq2500filtersubs.csv', s
 ################################################################################
 # DWI
 
-numOdwiPrcnt <- 15
+numOdwiPrcnt <- PRCNTO
 
 tmp <- subset(allSubsDf, detertrack == TRUE )
 tmp2 <- subset(tmp, outlier_prcnt < numOdwiPrcnt, c(1:6, 
@@ -99,7 +100,7 @@ tmp2 <- subset(tmp, outlier_prcnt < numOdwiPrcnt, c(1:6,
                                               grep("_t1$",colnames(tmp)),
                                               grep("_t2$",colnames(tmp)),
                                               grep("sub",colnames(tmp))) )
-outlmat <- matrix(0, nrow = nrow(tmp2), ncol = 6)
+outlmat <- matrix(0, nrow = nrow(tmp2), ncol = 3)
 outlmat[,1] <- outliers::scores(tmp2$tsnr_t2, type = "iqr") < -1.5
 outlmat[,2] <- outliers::scores(tmp2$outlmean_t2, type = "iqr", lim = 1.5)
 outlmat[,3] <- outliers::scores(tmp2$outlmax_t2, type = "iqr", lim = 1.5)
@@ -132,7 +133,4 @@ bPathOut <- paste(getwd(),'/proc_data/', sep='')
 
 write.table(filterDF.T1subs, file = paste(bPathOut,'/T1filtersubs.csv', sep =''), 
             col.names = NA, sep = ",")
-
-
-
 
