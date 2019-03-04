@@ -146,7 +146,7 @@ t1_mriqcDf['sub_name'] <- tmpStr
 tmpDf  <- as.data.frame(allSubsDf[,'sub_name'])
 
 # T1 IQCMs: cjv, cnr, snr_total, snrd_total
-t1_iqm <- c("cjv", "cnr", "snr_total", "snrd_total")
+t1_iqm <- c("cjv", "cnr", "snr_total", "snrd_total", "efc", "fber")
 
 tmpDf <- t1_mriqcDf[c("sub_name",t1_iqm)]
 colnames(tmpDf) <- c("sub_name",paste(t1_iqm,"_t1w",sep=""))
@@ -159,7 +159,7 @@ tmpDf  <- as.data.frame(allSubsDf[,'sub_name'])
 colnames(tmpDf) <- "sub_name"
 
 # FMRI IQMs: dvars_nstd, tsnr, fd_mean, aqi
-fmri_qcm <- c("dvars_nstd", "dvars_vstd", "tsnr", "fd_mean", "aqi")
+fmri_qcm <- c("dvars_nstd", "dvars_vstd", "gcor", "tsnr", "aor", "aqi", "fd_mean", "fd_perc")
 
 for (idx in 1:length(fmri_mriqc_list)) {
     
@@ -174,6 +174,18 @@ for (idx in 1:length(fmri_mriqc_list)) {
 }
 
 allSubsDf <- merge(allSubsDf, tmpDf, by = "sub_name", all.x = TRUE )
+
+################################################################################
+# fixup the fmri boolean columns
+
+bool645 <- allSubsDf$`acq-645` & !is.na(allSubsDf$`tsnr_acq-645`)
+allSubsDf$`acq-645` <- bool645
+
+bool1400 <- allSubsDf$`acq-1400` & !is.na(allSubsDf$`tsnr_acq-1400`)
+allSubsDf$`acq-1400` <- bool1400
+
+bool2500 <- allSubsDf$`acq-2500` & !is.na(allSubsDf$`tsnr_acq-2500`)
+allSubsDf$`acq-2500` <- bool2500
 
 ################################################################################
 
