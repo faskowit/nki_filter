@@ -33,3 +33,4 @@ vignettes/*.pdf
 *.utf8.md
 *.knit.md
 proc_data/
+data/assessment_data*
