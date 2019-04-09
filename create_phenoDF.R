@@ -93,4 +93,21 @@ colnames(wasiDf) <- c("wasi_vci_prcntile",
 phenoDf <- merge(phenoDf,wasiDf,by = "coins_id", all.x = TRUE )
 rm(wasiDf)
 
+################################################################################
+# WIAT
+inFile <- paste(getwd(),'/data/assessment_data/8100_WIAT-IIA_20170607.csv', sep='')
+loadDF <- read.csv(inFile)
+# need to do this for when testing was two days
+levels(loadDF$X.2)[levels(loadDF$X.2)=="V1"] <- "V2"
+loadDF['coins_id'] <- paste(loadDF$X, loadDF$X.2, sep = "-")
+# make the DF to merge
+wiatDf <- loadDF[c("Composite.Standard.Score",
+                   "coins_id")]
+colnames(wiatDf) <- c("wiat_composite",
+                      "coins_id")
+
+# and merge base on coinsID
+phenoDf <- merge(phenoDf,wiatDf,by = "coins_id", all.x = TRUE )
+rm(wiatDf)
+
 
