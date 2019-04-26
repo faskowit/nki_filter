@@ -110,4 +110,9 @@ colnames(wiatDf) <- c("wiat_composite",
 phenoDf <- merge(phenoDf,wiatDf,by = "coins_id", all.x = TRUE )
 rm(wiatDf)
 
+################################################################################
+# write it out
+
+    outFile <- paste(getwd(),'/proc_data/phenoDf.csv', sep='')
+    write.csv(phenoDf,outFile)
 
