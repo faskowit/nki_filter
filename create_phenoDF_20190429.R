@@ -29,9 +29,9 @@ phenoDf[grep("NaN",phenoDf$coins_id),'coins_id'] <- NaN
 
 ################################################################################
 # CALCULATED AGE
-inFile <- paste(getwd(),'/data/assessment_data/8100_Age_20170607.csv', sep='')
+inFile <- paste(getwd(),'/data/assessment_data_20190429/8100_Age_20190429.csv', sep='')
 loadDF <- read.csv(inFile)
-loadDF['coins_id'] <- paste(loadDF$X, loadDF$X.2, sep = "-")
+loadDF['coins_id'] <- paste(loadDF$Anonymized.ID, loadDF$Visit, sep = "-")
 # make the DF to merge
 ageDF <- loadDF[c("Calculated.Age","coins_id")]
 
@@ -41,11 +41,11 @@ rm(ageDF)
 
 ################################################################################
 # DEMO
-inFile <- paste(getwd(),'/data/assessment_data/8100_Demos_20170608.csv', sep='')
+inFile <- paste(getwd(),'/data/assessment_data_20190429/8100_Demos_20190429.csv', sep='')
 loadDF <- read.csv(inFile)
 # need to do this for when testing was two days
-levels(loadDF$X.2)[levels(loadDF$X.2)=="V1"] <- "V2"
-loadDF['coins_id'] <- paste(loadDF$X, loadDF$X.2, sep = "-")
+levels(loadDF$Visit)[levels(loadDF$Visit)=="V1"] <- "V2"
+loadDF['coins_id'] <- paste(loadDF$Anonymized.ID, loadDF$Visit, sep = "-")
 # make the DF to merge
 demoDf <- loadDF[c("What.is.your.current.age.in.years.",
                    "What.is.your.sex.","What.is.your.native.language.",
@@ -59,11 +59,11 @@ rm(demoDf)
 
 ################################################################################
 # DIAGNOSTIC SUMMARY
-inFile <- paste(getwd(),'/data/assessment_data/8100_ConsensusDiagnosticSummary_20170607.csv', sep='')
+inFile <- paste(getwd(),'/data/assessment_data_20190429/8100_Consensus_Diagnostic_Summary_(4-15-13)_20190429.csv', sep='')
 loadDF <- read.csv(inFile)
 # need to do this for when testing was two days
-levels(loadDF$X.2)[levels(loadDF$X.2)=="V1"] <- "V2"
-loadDF['coins_id'] <- paste(loadDF$X, loadDF$X.2, sep = "-")
+levels(loadDF$Visit)[levels(loadDF$Visit)=="V1"] <- "V2"
+loadDF['coins_id'] <- paste(loadDF$Anonymized.ID, loadDF$Visit, sep = "-")
 loadDF['diag'] <- as.numeric(loadDF$Is.there.a.consensus.diagnosis. == 1) 
 # make the DF to merge
 diagDf <- loadDF[c("diag","coins_id")]
@@ -74,11 +74,11 @@ rm(diagDf)
 
 ################################################################################
 # WASI
-inFile <- paste(getwd(),'/data/assessment_data/8100_WASI-II_20170606.csv', sep='')
+inFile <- paste(getwd(),'/data/assessment_data_20190429/8100_WASI-II_20190429.csv', sep='')
 loadDF <- read.csv(inFile)
 # need to do this for when testing was two days
-levels(loadDF$X.2)[levels(loadDF$X.2)=="V1"] <- "V2"
-loadDF['coins_id'] <- paste(loadDF$X, loadDF$X.2, sep = "-")
+levels(loadDF$Visit)[levels(loadDF$Visit)=="V1"] <- "V2"
+loadDF['coins_id'] <- paste(loadDF$Anonymized.ID, loadDF$Visit, sep = "-")
 # make the DF to merge
 wasiDf <- loadDF[c("Verbal.Comp..Percentile.Rank",
                    "Perc..Rsng..Percentil.Rank",
@@ -95,11 +95,11 @@ rm(wasiDf)
 
 ################################################################################
 # WIAT
-inFile <- paste(getwd(),'/data/assessment_data/8100_WIAT-IIA_20170607.csv', sep='')
+inFile <- paste(getwd(),'/data/assessment_data_20190429/8100_WIAT-IIA_20190429.csv', sep='')
 loadDF <- read.csv(inFile)
 # need to do this for when testing was two days
-levels(loadDF$X.2)[levels(loadDF$X.2)=="V1"] <- "V2"
-loadDF['coins_id'] <- paste(loadDF$X, loadDF$X.2, sep = "-")
+levels(loadDF$Visit)[levels(loadDF$Visit)=="V1"] <- "V2"
+loadDF['coins_id'] <- paste(loadDF$Anonymized.ID, loadDF$Visit, sep = "-")
 # make the DF to merge
 wiatDf <- loadDF[c("Composite.Standard.Score",
                    "coins_id")]
@@ -111,8 +111,13 @@ phenoDf <- merge(phenoDf,wiatDf,by = "coins_id", all.x = TRUE )
 rm(wiatDf)
 
 ################################################################################
+# remove duplicate rows
+
+phenoDF.nonDup = phenoDf[!duplicated(phenoDf),]
+
+################################################################################
 # write it out
 
-    outFile <- paste(getwd(),'/proc_data/phenoDf.csv', sep='')
-    write.csv(phenoDf,outFile)
+  outFile <- paste(getwd(),'/proc_data/phenoDf_20190429.csv', sep='')
+  write.csv(phenoDF.nonDup,outFile)
 
